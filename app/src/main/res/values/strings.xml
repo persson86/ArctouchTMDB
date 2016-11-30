@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ArctouchTMDB</string>
+    <string name="api_key">1f54bd990f1cdfb230adb312546d765d</string>
 </resources>
