@@ -36,7 +36,7 @@ public class MovieModel {
     @SerializedName("release_date")
     private String release_date;
     @SerializedName("genre_ids")
-    private List<String> genre_ids;
+    private List<Integer> genre_ids;
 
     public int getId() {
         return id;
@@ -142,11 +142,11 @@ public class MovieModel {
         this.release_date = release_date;
     }
 
-    public List<String> getGenre_ids() {
+    public List<Integer> getGenre_ids() {
         return genre_ids;
     }
 
-    public void setGenre_ids(List<String> genre_ids) {
+    public void setGenre_ids(List<Integer> genre_ids) {
         this.genre_ids = genre_ids;
     }
 }

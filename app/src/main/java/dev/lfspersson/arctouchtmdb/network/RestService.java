@@ -5,6 +5,8 @@ import java.util.Map;
 import dev.lfspersson.arctouchtmdb.BuildConfig;
 import dev.lfspersson.arctouchtmdb.database.AuthenticationModel;
 import dev.lfspersson.arctouchtmdb.database.DiscoverModel;
+import dev.lfspersson.arctouchtmdb.database.GenreListModel;
+import dev.lfspersson.arctouchtmdb.database.GenreModel;
 import retrofit.Call;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
@@ -28,6 +30,10 @@ public interface RestService {
                                   @Query("include_adult") boolean include_adult,
                                   @Query("include_video") boolean include_video,
                                   @Query("page") int page);
+
+    @GET("genre/movie/list")
+    Call<GenreListModel> getGenres(@Query("api_key") String api_key,
+                                   @Query("language") String language);
 
     Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(BuildConfig.API_END_POINT)
