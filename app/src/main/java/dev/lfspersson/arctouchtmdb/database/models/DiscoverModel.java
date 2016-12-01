@@ -1,4 +1,4 @@
-package dev.lfspersson.arctouchtmdb.database;
+package dev.lfspersson.arctouchtmdb.database.models;
 
 import com.google.gson.annotations.SerializedName;
 

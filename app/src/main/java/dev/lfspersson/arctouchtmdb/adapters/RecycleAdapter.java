@@ -19,18 +19,19 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import dev.lfspersson.arctouchtmdb.R;
-import dev.lfspersson.arctouchtmdb.database.GenreListModel;
-import dev.lfspersson.arctouchtmdb.database.GenreModel;
-import dev.lfspersson.arctouchtmdb.database.MovieModel;
+import dev.lfspersson.arctouchtmdb.database.models.GenreListModel;
+import dev.lfspersson.arctouchtmdb.database.models.GenreModel;
+import dev.lfspersson.arctouchtmdb.database.models.MovieModel;
+import dev.lfspersson.arctouchtmdb.database.models.MovieRealmModel;
 
 public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItemViewHolder> {
-    private List<MovieModel> movies;
+    private List<MovieRealmModel> movies;
     private GenreListModel genres;
     private Context context;
     private Activity activity;
     private AdapterView.OnItemClickListener itemClickListener;
 
-    public RecycleAdapter(Context context, Activity activity, List<MovieModel> movies, GenreListModel genres) {
+    public RecycleAdapter(Context context, Activity activity, List<MovieRealmModel> movies) {
         this.movies = movies;
         this.genres = genres;
         this.context = context;
@@ -46,10 +47,10 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItem
     @Override
     public void onBindViewHolder(GridItemViewHolder holder, int position) {
         String imageBaseUrl = context.getString(R.string.image_base_url);
-        MovieModel movie = movies.get(position);
+        MovieRealmModel movie = movies.get(position);
 
         holder.tvTitle.setText(movie.getTitle());
-        holder.tvGenre.setText(getGenreMovie(position));
+        holder.tvGenre.setText(movie.getGenres());
         holder.tvReleaseDate.setText(movie.getRelease_date());
 
         Glide.with(holder.ivPoster.getContext())
@@ -57,7 +58,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItem
                 .into(holder.ivPoster);
     }
 
-    private String getGenreMovie(int position) {
+    /*private String getGenreMovie(int position) {
         List<Integer> listGenreIds = movies.get(position).getGenre_ids();
         String genre_description = "";
         String separator = " - ";
@@ -86,7 +87,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItem
             }
         }
         return genre_description;
-    }
+    }*/
 
     @Override
     public int getItemCount() {

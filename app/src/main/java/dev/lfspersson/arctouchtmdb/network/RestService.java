@@ -1,19 +1,14 @@
 package dev.lfspersson.arctouchtmdb.network;
 
-import java.util.Map;
-
 import dev.lfspersson.arctouchtmdb.BuildConfig;
-import dev.lfspersson.arctouchtmdb.database.AuthenticationModel;
-import dev.lfspersson.arctouchtmdb.database.DiscoverModel;
-import dev.lfspersson.arctouchtmdb.database.GenreListModel;
-import dev.lfspersson.arctouchtmdb.database.GenreModel;
+import dev.lfspersson.arctouchtmdb.database.models.AuthenticationModel;
+import dev.lfspersson.arctouchtmdb.database.models.DiscoverModel;
+import dev.lfspersson.arctouchtmdb.database.models.GenreListModel;
 import retrofit.Call;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 import retrofit.http.GET;
-import retrofit.http.Path;
 import retrofit.http.Query;
-import retrofit.http.QueryMap;
 
 /**
  * Created by LFSPersson on 30/11/16.

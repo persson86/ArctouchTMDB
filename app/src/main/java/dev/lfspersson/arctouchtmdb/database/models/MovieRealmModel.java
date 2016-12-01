@@ -1,23 +1,25 @@
-package dev.lfspersson.arctouchtmdb.database;
+package dev.lfspersson.arctouchtmdb.database.models;
 
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+import io.realm.RealmObject;
+
 /**
  * Created by LFSPersson on 30/11/16.
  */
 
-public class MovieModel {
+public class MovieRealmModel extends RealmObject {
     @SerializedName("id")
     private int id;
-    @SerializedName("original_title")
+/*    @SerializedName("original_title")
     private String original_title;
     @SerializedName("original_language")
-    private String original_language;
+    private String original_language;*/
     @SerializedName("title")
     private String title;
-    @SerializedName("backdrop_path")
+/*    @SerializedName("backdrop_path")
     private String backdrop_path;
     @SerializedName("popularity")
     private String popularity;
@@ -26,17 +28,17 @@ public class MovieModel {
     @SerializedName("video")
     private boolean video;
     @SerializedName("vote_average")
-    private String vote_average;
+    private String vote_average;*/
     @SerializedName("poster_path")
     private String poster_path;
-    @SerializedName("adult")
-    private boolean adult;
+/*    @SerializedName("adult")
+    private boolean adult;*/
     @SerializedName("overview")
     private String overview;
     @SerializedName("release_date")
     private String release_date;
-    @SerializedName("genre_ids")
-    private List<Integer> genre_ids;
+
+    private String genres;
 
     public int getId() {
         return id;
@@ -46,7 +48,7 @@ public class MovieModel {
         this.id = id;
     }
 
-    public String getOriginal_title() {
+/*    public String getOriginal_title() {
         return original_title;
     }
 
@@ -60,7 +62,7 @@ public class MovieModel {
 
     public void setOriginal_language(String original_language) {
         this.original_language = original_language;
-    }
+    }*/
 
     public String getTitle() {
         return title;
@@ -70,7 +72,7 @@ public class MovieModel {
         this.title = title;
     }
 
-    public String getBackdrop_path() {
+/*    public String getBackdrop_path() {
         return backdrop_path;
     }
 
@@ -108,7 +110,7 @@ public class MovieModel {
 
     public void setVote_average(String vote_average) {
         this.vote_average = vote_average;
-    }
+    }*/
 
     public String getPoster_path() {
         return poster_path;
@@ -118,14 +120,14 @@ public class MovieModel {
         this.poster_path = poster_path;
     }
 
-    public boolean isAdult() {
+    /*public boolean isAdult() {
         return adult;
     }
 
     public void setAdult(boolean adult) {
         this.adult = adult;
     }
-
+*/
     public String getOverview() {
         return overview;
     }
@@ -142,11 +144,11 @@ public class MovieModel {
         this.release_date = release_date;
     }
 
-    public List<Integer> getGenre_ids() {
-        return genre_ids;
+    public String getGenres() {
+        return genres;
     }
 
-    public void setGenre_ids(List<Integer> genre_ids) {
-        this.genre_ids = genre_ids;
+    public void setGenres(String genres) {
+        this.genres = genres;
     }
 }
