@@ -8,7 +8,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -28,6 +33,7 @@ import java.util.Locale;
 
 import dev.lfspersson.arctouchtmdb.R;
 import dev.lfspersson.arctouchtmdb.adapters.RecycleAdapter;
+import dev.lfspersson.arctouchtmdb.database.DatabaseHelper;
 import dev.lfspersson.arctouchtmdb.database.dao.MovieDAO;
 import dev.lfspersson.arctouchtmdb.database.models.DiscoverModel;
 import dev.lfspersson.arctouchtmdb.database.models.GenreListModel;
@@ -35,6 +41,9 @@ import dev.lfspersson.arctouchtmdb.database.models.GenreModel;
 import dev.lfspersson.arctouchtmdb.database.models.MovieModel;
 import dev.lfspersson.arctouchtmdb.database.models.MovieRealmModel;
 import dev.lfspersson.arctouchtmdb.network.RestService;
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
@@ -42,37 +51,43 @@ import retrofit.Retrofit;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity {
-    private RestService service;
-    private static String API_KEY;
-    private int page = 1;
-
     private Context context;
-
+    private RestService service;
     private RecycleAdapter recycleAdapter;
     private LinearLayoutManager layoutManager;
     private ProgressDialog progressDialog;
 
     private DiscoverModel discoverModel;
-    private List<MovieModel> responseMovies;
     private List<MovieModel> movieModelList;
     private GenreListModel genreListModel;
-    private List<MovieRealmModel> movieRealmModel;
+    private List<MovieRealmModel> movieRealmModelList;
 
-    public boolean moviesInProcess = false;
-    public int visibleItemPosition = 0;
+    private static String API_KEY;
+    private int page = 1;
+    private boolean moviesInProcess = false;
+    private int visibleItemPosition = 0;
 
     @Bean
     MovieDAO movieDAO;
+    @Bean
+    DatabaseHelper dbHelper;
 
     @ViewById
     RecyclerView rvList;
+    @ViewById
+    Toolbar toolbar;
 
     @AfterViews
     void initialize() {
-        startDialog();
         setActivityConfig();
+        startDialog();
         setScreenConfig();
         setRestConfig();
+    }
+
+    private void setActivityConfig() {
+        context = getApplicationContext();
+        API_KEY = getString(R.string.api_key);
     }
 
     private void startDialog() {
@@ -82,25 +97,61 @@ public class MainActivity extends AppCompatActivity {
         progressDialog.show();
     }
 
-    private void setActivityConfig() {
-        context = getApplicationContext();
-        API_KEY = getString(R.string.api_key);
-    }
-
     private void setScreenConfig() {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        loadToolbar();
+    }
+
+    private void loadToolbar() {
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
     private void setRestConfig() {
         movieDAO.deleteMovies();
         service = RestService.retrofit.create(RestService.class);
-        restGetMovies(page);
+        restGetMovies();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        MenuItem myActionMenuItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) myActionMenuItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                List<MovieRealmModel> list = movieDAO.getMoviesBySearchTitle(query);
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                List<MovieRealmModel> list;
+                if (TextUtils.isEmpty(newText)) {
+                    //adapter.filter("");
+                    //listView.clearTextFilter();
+                } else {
+
+
+                }
+                list = movieDAO.getMoviesBySearchTitle(newText);
+                return true;
+            }
+        });
+
+        return true;
+    }
+
+
     @Background
-    public void restGetMovies(final int page) {
+    public void restGetMovies() {
         moviesInProcess = true;
 
         String sort_by = getString(R.string.sort_by);
@@ -118,16 +169,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Response<DiscoverModel> response, Retrofit retrofit) {
                 discoverModel = response.body();
-
-                if (responseMovies != null)
-                    responseMovies.clear();
-
-                responseMovies = discoverModel.getResults();
+                List<MovieModel> movieModelList = discoverModel.getResults();
 
                 if (page > 1) {
-                    loadMovies(responseMovies);
+                    loadMovies(movieModelList);
                 } else
-                    restGetGenres();
+                    restGetGenres(movieModelList);
             }
 
             @Override
@@ -139,13 +186,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Background
-    public void restGetGenres() {
+    public void restGetGenres(final List<MovieModel> movieModelList) {
         final Call<GenreListModel> call = service.getGenres(API_KEY, getDeviceLanguage());
         call.enqueue(new Callback<GenreListModel>() {
             @Override
             public void onResponse(Response<GenreListModel> response, Retrofit retrofit) {
                 genreListModel = response.body();
-                loadMovies(responseMovies);
+                loadMovies(movieModelList);
             }
 
             @Override
@@ -157,8 +204,6 @@ public class MainActivity extends AppCompatActivity {
 
     @UiThread
     public void loadMovies(List<MovieModel> movies) {
-        page = discoverModel.getPage();
-
         if (movieModelList == null)
             movieModelList = new ArrayList<>();
 
@@ -168,42 +213,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Save movies list as object using Realm
-        movieDAO.saveMovies(movieRealmModel);
+        movieDAO.saveMovies(movieRealmModelList);
 
-        setRecycleViewConfig(page);
+        setRecycleViewConfig();
         progressDialog.dismiss();
         moviesInProcess = false;
-    }
-
-    private void setRecycleViewConfig(int page) {
-        if (page == 1) {
-            layoutManager = new GridLayoutManager(MainActivity.this, 2);
-            rvList.setLayoutManager(layoutManager);
-            rvList.setHasFixedSize(true);
-            rvList.addOnScrollListener(createInfiniteScrollListener());
-            recycleAdapter = new RecycleAdapter(context, movieRealmModel);
-            rvList.setAdapter(recycleAdapter);
-        } else {
-            recycleAdapter.notifyItemInserted(movieModelList.size());
-            rvList.scrollToPosition(visibleItemPosition);
-        }
-
-        onClickListenerMovie();
-    }
-
-    private void onClickListenerMovie() {
-        recycleAdapter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MovieDetailActivity_.intent(context)
-                        .flags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .extra("movieId", movieRealmModel.get(position).getId())
-                        .start();
-
-                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
-            }
-        });
-
     }
 
     private void saveMovieRealm(MovieModel m) {
@@ -216,10 +230,41 @@ public class MainActivity extends AppCompatActivity {
         model.setRelease_date(m.getRelease_date());
         model.setGenres(getGenreMovie(m));
 
-        if (movieRealmModel == null)
-            movieRealmModel = new ArrayList<>();
+        if (movieRealmModelList == null)
+            movieRealmModelList = new ArrayList<>();
 
-        movieRealmModel.add(model);
+        movieRealmModelList.add(model);
+    }
+
+    private void setRecycleViewConfig() {
+        if (page == 1) {
+            layoutManager = new GridLayoutManager(MainActivity.this, 2);
+            rvList.setLayoutManager(layoutManager);
+            rvList.setHasFixedSize(true);
+            rvList.addOnScrollListener(createInfiniteScrollListener());
+            recycleAdapter = new RecycleAdapter(context, movieRealmModelList);
+            rvList.setAdapter(recycleAdapter);
+        } else {
+            recycleAdapter.notifyItemInserted(movieModelList.size());
+            rvList.scrollToPosition(visibleItemPosition + 2);
+        }
+
+        onClickListenerMovie();
+    }
+
+    private void onClickListenerMovie() {
+        recycleAdapter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MovieDetailActivity_.intent(context)
+                        .flags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .extra("movieId", movieRealmModelList.get(position).getId())
+                        .start();
+
+                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
+            }
+        });
+
     }
 
     private String getDeviceLanguage() {
@@ -237,13 +282,18 @@ public class MainActivity extends AppCompatActivity {
             count++;
             int pos = 0;
 
+            boolean genreNotInList = true;
             for (GenreModel g : genreListModel.getGenreList()) {
                 pos++;
                 if (g.getId() == id) {
                     pos = pos - 1;
+                    genreNotInList = false;
                     break;
                 }
             }
+
+            if (genreNotInList)
+                continue;
 
             if (count != movie.getGenre_ids().size()) {
                 if (count == 1)
@@ -266,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
 
                 page++;
-                restGetMovies(page);
+                restGetMovies();
                 visibleItemPosition = firstVisibleItemPosition;
             }
         };

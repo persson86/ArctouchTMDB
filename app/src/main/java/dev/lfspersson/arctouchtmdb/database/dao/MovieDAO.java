@@ -6,12 +6,14 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dev.lfspersson.arctouchtmdb.database.DatabaseHelper;
 import dev.lfspersson.arctouchtmdb.database.models.MovieModel;
 import dev.lfspersson.arctouchtmdb.database.models.MovieRealmModel;
 import io.realm.Realm;
+import io.realm.RealmResults;
 import io.realm.Sort;
 
 /**
@@ -60,6 +62,15 @@ public class MovieDAO {
         realm.where(MovieRealmModel.class).findAll().deleteAllFromRealm();
         realm.commitTransaction();
         realm.close();
+    }
+
+    public List<MovieRealmModel> getMoviesBySearchTitle(String query) {
+        Realm realm = dbHelper.getRealm();
+        RealmResults<MovieRealmModel> result = realm.where(MovieRealmModel.class)
+                //.equalTo("title", query)
+                .contains("title", query)
+                .findAll();
+        return result;
     }
 
 }
