@@ -1,20 +1,23 @@
 package dev.lfspersson.arctouchtmdb.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.Toast;
+
+import com.github.pwittchen.infinitescroll.library.InfiniteScrollListener;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
@@ -39,10 +42,15 @@ import retrofit.Retrofit;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity {
-    RestService service;
-    Context context;
+    private RestService service;
+    private static String API_KEY;
+    private int page = 1;
+
+    private Context context;
 
     private RecycleAdapter recycleAdapter;
+    private LinearLayoutManager layoutManager;
+    private ProgressDialog progressDialog;
 
     private DiscoverModel discoverModel;
     private List<MovieModel> responseMovies;
@@ -50,25 +58,31 @@ public class MainActivity extends AppCompatActivity {
     private GenreListModel genreListModel;
     private List<MovieRealmModel> movieRealmModel;
 
-    private static String API_KEY;
-    private int page = 1;
+    public boolean moviesInProcess = false;
+    public int visibleItemPosition = 0;
 
     @Bean
     MovieDAO movieDAO;
 
     @ViewById
     RecyclerView rvList;
-    @ViewById
-    Button btLoadData;
 
     @AfterViews
     void initialize() {
+        startDialog();
         setActivityConfig();
         setScreenConfig();
         setRestConfig();
     }
 
-    private void setActivityConfig(){
+    private void startDialog() {
+        progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setTitle(getResources().getString(R.string.msg_retrieving_data));
+        progressDialog.setMessage(getResources().getString(R.string.msg_wait));
+        progressDialog.show();
+    }
+
+    private void setActivityConfig() {
         context = getApplicationContext();
         API_KEY = getString(R.string.api_key);
     }
@@ -85,34 +99,10 @@ public class MainActivity extends AppCompatActivity {
         restGetMovies(page);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Click
-    void btLoadData() {
-        page++;
-        restGetMovies(page);
-    }
-
-    private void onClickListenerCard() {
-        recycleAdapter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(context, movieModelList.get(position).getTitle(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private String getDeviceLanguage() {
-        String language = Locale.getDefault().getLanguage();
-        String country = Locale.getDefault().getCountry();
-        return language + "-" + country;
-    }
-
     @Background
-    public void restGetMovies(int page) {
+    public void restGetMovies(final int page) {
+        moviesInProcess = true;
+
         String sort_by = getString(R.string.sort_by);
         boolean include_adult = false;
         boolean include_video = false;
@@ -131,15 +121,19 @@ public class MainActivity extends AppCompatActivity {
 
                 if (responseMovies != null)
                     responseMovies.clear();
+
                 responseMovies = discoverModel.getResults();
 
-                restGetGenres();
+                if (page > 1) {
+                    loadMovies(responseMovies);
+                } else
+                    restGetGenres();
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Toast.makeText(context, t.getMessage().toString(), Toast.LENGTH_LONG).show();
-                //progressDialog.dismiss();
+                Log.e(getString(R.string.log_error), t.getMessage());
+                progressDialog.dismiss();
             }
         });
     }
@@ -151,45 +145,65 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Response<GenreListModel> response, Retrofit retrofit) {
                 genreListModel = response.body();
-                loadCards(responseMovies);
+                loadMovies(responseMovies);
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Toast.makeText(context, t.getMessage().toString(), Toast.LENGTH_LONG).show();
+                Log.e(getString(R.string.log_error), t.getMessage());
             }
         });
     }
 
     @UiThread
-    public void loadCards(List<MovieModel> movies) {
+    public void loadMovies(List<MovieModel> movies) {
         page = discoverModel.getPage();
 
-        if (movieModelList == null) {
+        if (movieModelList == null)
             movieModelList = new ArrayList<>();
-            for (MovieModel m : movies) {
-                movieModelList.add(m);
-                saveMovieRealm(m);
-            }
-        } else {
-            for (MovieModel m : movies) {
-                movieModelList.add(m);
-                saveMovieRealm(m);
-            }
-            recycleAdapter.notifyItemInserted(movieModelList.size());
-            //rvList.scrollToPosition(movieModelList.size() - 20);
+
+        for (MovieModel m : movies) {
+            movieModelList.add(m);
+            saveMovieRealm(m);
         }
 
-        //Save movies list as objetct using Realm
+        //Save movies list as object using Realm
         movieDAO.saveMovies(movieRealmModel);
 
-        rvList.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
-        recycleAdapter = new RecycleAdapter(context, this, movieRealmModel);
-        rvList.setAdapter(recycleAdapter);
+        setRecycleViewConfig(page);
+        progressDialog.dismiss();
+        moviesInProcess = false;
+    }
 
-        onClickListenerCard();
+    private void setRecycleViewConfig(int page) {
+        if (page == 1) {
+            layoutManager = new GridLayoutManager(MainActivity.this, 2);
+            rvList.setLayoutManager(layoutManager);
+            rvList.setHasFixedSize(true);
+            rvList.addOnScrollListener(createInfiniteScrollListener());
+            recycleAdapter = new RecycleAdapter(context, movieRealmModel);
+            rvList.setAdapter(recycleAdapter);
+        } else {
+            recycleAdapter.notifyItemInserted(movieModelList.size());
+            rvList.scrollToPosition(visibleItemPosition);
+        }
 
-        //swipeRefreshLayout.setRefreshing(false);
+        onClickListenerMovie();
+    }
+
+    private void onClickListenerMovie() {
+        recycleAdapter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MovieDetailActivity_.intent(context)
+                        .flags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .extra("movieId", movieRealmModel.get(position).getId())
+                        .start();
+
+                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
+            }
+        });
+
     }
 
     private void saveMovieRealm(MovieModel m) {
@@ -197,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
         model.setId(m.getId());
         model.setTitle(m.getTitle());
         model.setPoster_path(m.getPoster_path());
+        model.setBackdrop_path(m.getBackdrop_path());
         model.setOverview(m.getOverview());
         model.setRelease_date(m.getRelease_date());
         model.setGenres(getGenreMovie(m));
@@ -207,9 +222,15 @@ public class MainActivity extends AppCompatActivity {
         movieRealmModel.add(model);
     }
 
+    private String getDeviceLanguage() {
+        String language = Locale.getDefault().getLanguage();
+        String country = Locale.getDefault().getCountry();
+        return language + "-" + country;
+    }
+
     private String getGenreMovie(MovieModel movie) {
         String genreDescription = "";
-        String separator = " - ";
+        String separator = getString(R.string.genre_separator);
 
         int count = 0;
         for (int id : movie.getGenre_ids()) {
@@ -237,35 +258,17 @@ public class MainActivity extends AppCompatActivity {
         return genreDescription;
     }
 
-    //-----------------------
-    /*    @Background
-    public void restAuthentication() {
-        final Call<AuthenticationModel> call = service.getAuthentication(API_KEY);
-        call.enqueue(new Callback<AuthenticationModel>() {
+    private InfiniteScrollListener createInfiniteScrollListener() {
+        return new InfiniteScrollListener(movieDAO.getMovies().size(), layoutManager) {
             @Override
-            public void onResponse(Response<AuthenticationModel> response, Retrofit retrofit) {
-                AuthenticationModel auth = response.body();
+            public void onScrolledToEnd(final int firstVisibleItemPosition) {
+                if (moviesInProcess)
+                    return;
 
-                //restDiscoverMovies();
+                page++;
+                restGetMovies(page);
+                visibleItemPosition = firstVisibleItemPosition;
             }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Toast.makeText(context, t.getMessage().toString(), Toast.LENGTH_LONG).show();
-                //progressDialog.dismiss();
-            }
-        });
-    }*/
-
-
-/*    private void swipeRefreshLayoutListener() {
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                Toast.makeText(context, "refresh!!!", Toast.LENGTH_SHORT).show();
-
-                page = discoverModel.getPage() + 1;
-            }
-        });
-    }*/
+        };
+    }
 }

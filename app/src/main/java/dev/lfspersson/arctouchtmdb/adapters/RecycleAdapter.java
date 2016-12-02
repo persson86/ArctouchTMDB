@@ -28,14 +28,12 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItem
     private List<MovieRealmModel> movies;
     private GenreListModel genres;
     private Context context;
-    private Activity activity;
     private AdapterView.OnItemClickListener itemClickListener;
 
-    public RecycleAdapter(Context context, Activity activity, List<MovieRealmModel> movies) {
+    public RecycleAdapter(Context context, List<MovieRealmModel> movies) {
         this.movies = movies;
         this.genres = genres;
         this.context = context;
-        this.activity = activity;
     }
 
     @Override

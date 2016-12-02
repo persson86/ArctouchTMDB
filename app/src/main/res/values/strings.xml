@@ -3,4 +3,8 @@
     <string name="api_key">1f54bd990f1cdfb230adb312546d765d</string>
     <string name="sort_by">popularity.desc</string>
     <string name="image_base_url">https://image.tmdb.org/t/p/w500</string>
+    <string name="genre_separator"> - </string>
+    <string name="msg_wait">wait...</string>
+    <string name="msg_retrieving_data">Retrieving data</string>
+    <string name="log_error">CUSTOM_LOG_ERROR</string>
 </resources>
