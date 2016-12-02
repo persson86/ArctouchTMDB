@@ -38,16 +38,6 @@ public class MovieDAO {
         realm.commitTransaction();
     }
 
-    public void saveMovie(MovieRealmModel model) {
-        Realm realm = dbHelper.getRealm();
-        realm.beginTransaction();
-        realm.where(MovieRealmModel.class).findAll().deleteAllFromRealm();
-        realm.commitTransaction();
-        realm.beginTransaction();
-        realm.copyToRealm(model);
-        realm.commitTransaction();
-    }
-
     public List<MovieRealmModel> getMovies() {
         return dbHelper.getRealm().where(MovieRealmModel.class).findAll();
     }
@@ -67,8 +57,7 @@ public class MovieDAO {
     public List<MovieRealmModel> getMoviesBySearchTitle(String query) {
         Realm realm = dbHelper.getRealm();
         RealmResults<MovieRealmModel> result = realm.where(MovieRealmModel.class)
-                //.equalTo("title", query)
-                .contains("title", query)
+                .contains("search_title", query)
                 .findAll();
         return result;
     }

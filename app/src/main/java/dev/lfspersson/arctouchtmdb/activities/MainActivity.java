@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -41,9 +42,6 @@ import dev.lfspersson.arctouchtmdb.database.models.GenreModel;
 import dev.lfspersson.arctouchtmdb.database.models.MovieModel;
 import dev.lfspersson.arctouchtmdb.database.models.MovieRealmModel;
 import dev.lfspersson.arctouchtmdb.network.RestService;
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmResults;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
@@ -121,34 +119,43 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        MenuItem myActionMenuItem = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) myActionMenuItem.getActionView();
+        MenuItem actionMenuItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) actionMenuItem.getActionView();
+        int catalogo = Color.parseColor("#FF0000");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                List<MovieRealmModel> list = movieDAO.getMoviesBySearchTitle(query);
-
+                List<MovieRealmModel> filteredMoviesList = movieDAO.getMoviesBySearchTitle(query);
+                layoutManager = new GridLayoutManager(MainActivity.this, 2);
+                rvList.setLayoutManager(layoutManager);
+                rvList.setHasFixedSize(true);
+                recycleAdapter = new RecycleAdapter(context, filteredMoviesList);
+                rvList.setAdapter(recycleAdapter);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                List<MovieRealmModel> list;
                 if (TextUtils.isEmpty(newText)) {
-                    //adapter.filter("");
-                    //listView.clearTextFilter();
+                    rvList.setLayoutManager(layoutManager);
+                    rvList.setHasFixedSize(true);
+                    rvList.addOnScrollListener(createInfiniteScrollListener());
+                    recycleAdapter = new RecycleAdapter(context, movieRealmModelList);
+                    rvList.setAdapter(recycleAdapter);
                 } else {
-
-
+                    List<MovieRealmModel> filteredMoviesList = movieDAO.getMoviesBySearchTitle(newText);
+                    layoutManager = new GridLayoutManager(MainActivity.this, 2);
+                    rvList.setLayoutManager(layoutManager);
+                    rvList.setHasFixedSize(true);
+                    recycleAdapter = new RecycleAdapter(context, filteredMoviesList);
+                    rvList.setAdapter(recycleAdapter);
                 }
-                list = movieDAO.getMoviesBySearchTitle(newText);
                 return true;
             }
         });
 
         return true;
     }
-
 
     @Background
     public void restGetMovies() {
@@ -229,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         model.setOverview(m.getOverview());
         model.setRelease_date(m.getRelease_date());
         model.setGenres(getGenreMovie(m));
+        model.setSearch_title(m.getTitle().toLowerCase());
 
         if (movieRealmModelList == null)
             movieRealmModelList = new ArrayList<>();

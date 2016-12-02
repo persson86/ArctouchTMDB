@@ -23,6 +23,7 @@ public class MovieRealmModel extends RealmObject {
     private String overview;
     @SerializedName("release_date")
     private String release_date;
+    private String search_title;
 
     private String genres;
 
@@ -80,5 +81,13 @@ public class MovieRealmModel extends RealmObject {
 
     public void setGenres(String genres) {
         this.genres = genres;
+    }
+
+    public String getSearch_title() {
+        return search_title;
+    }
+
+    public void setSearch_title(String search_title) {
+        this.search_title = search_title;
     }
 }
