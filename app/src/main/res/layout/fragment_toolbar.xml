@@ -7,9 +7,7 @@
     android:minHeight="?attr/actionBarSize"
     app:contentInsetLeft="0dp"
     app:contentInsetStart="0dp"
-    android:layout_marginBottom="16dp"
     android:theme="@style/ToolbarTheme"
-    app:popupTheme="@style/AppTheme.PopupOverlay"
     app:titleTextColor="@color/colorGreenTMDB">
 
     <LinearLayout

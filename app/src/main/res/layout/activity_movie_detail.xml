@@ -4,9 +4,8 @@
     android:id="@+id/activity_movie_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBackground"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:theme="@style/AppTheme"
     tools:context="dev.lfspersson.arctouchtmdb.activities.MovieDetailActivity">
 
     <include layout="@layout/fragment_toolbar"></include>
@@ -21,41 +20,46 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/ivPoster"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <ImageView
                 android:id="@+id/ivBackdrop"
                 android:layout_width="wrap_content"
                 android:layout_height="210dp" />
 
-            <TextView
-                android:id="@+id/tvTitle"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:padding="8dp"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvGenre"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="fantasia, acao e comedia"
-                android:textSize="8sp" />
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvReleaseDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="8sp" />
+                <TextView
+                    android:id="@+id/tvGenre"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textSize="8sp" />
 
-            <TextView
-                android:id="@+id/tvOverview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="10dp" />
+                <TextView
+                    android:id="@+id/tvReleaseDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textSize="8sp" />
+
+                <TextView
+                    android:id="@+id/tvOverview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textSize="10dp" />
+            </LinearLayout>
 
         </LinearLayout>
 

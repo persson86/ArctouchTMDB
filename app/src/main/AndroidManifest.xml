@@ -22,9 +22,7 @@
         </activity>
         <activity
             android:name=".activities.MainActivity_"
-            android:parentActivityName=".activities.MainActivity_"
-            android:theme="@style/AppTheme.NoActionBar" />
-
+            android:parentActivityName=".activities.MainActivity_" />
         <activity android:name=".activities.MovieDetailActivity_" />
     </application>
 

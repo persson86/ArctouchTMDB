@@ -34,8 +34,6 @@ public class MovieDetailActivity extends AppCompatActivity {
     @ViewById
     TextView tvToolbarTitle;
     @ViewById
-    ImageView ivPoster;
-    @ViewById
     ImageView ivBackdrop;
     @ViewById
     TextView tvTitle;
@@ -91,9 +89,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         String imageBaseUrl = context.getString(R.string.image_base_url);
         MovieRealmModel movie = movieDAO.getMovieById(movieId);
 
-        Glide.with(ivPoster.getContext())
-                .load(imageBaseUrl + movie.getPoster_path())
-                .into(ivPoster);
+        tvToolbarTitle.setText(movie.getTitle());
 
         Glide.with(ivBackdrop.getContext())
                 .load(imageBaseUrl + movie.getBackdrop_path())
