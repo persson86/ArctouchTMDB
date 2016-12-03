@@ -126,29 +126,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 List<MovieRealmModel> filteredMoviesList = movieDAO.getMoviesBySearchTitle(query);
-                layoutManager = new GridLayoutManager(MainActivity.this, 2);
-                rvList.setLayoutManager(layoutManager);
-                rvList.setHasFixedSize(true);
-                recycleAdapter = new RecycleAdapter(context, filteredMoviesList);
-                rvList.setAdapter(recycleAdapter);
+                setRecycleViewConfig(true, filteredMoviesList);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (TextUtils.isEmpty(newText)) {
-                    rvList.setLayoutManager(layoutManager);
-                    rvList.setHasFixedSize(true);
-                    rvList.addOnScrollListener(createInfiniteScrollListener());
-                    recycleAdapter = new RecycleAdapter(context, movieRealmModelList);
-                    rvList.setAdapter(recycleAdapter);
+                    setRecycleViewConfig(true, movieRealmModelList);
                 } else {
                     List<MovieRealmModel> filteredMoviesList = movieDAO.getMoviesBySearchTitle(newText);
-                    layoutManager = new GridLayoutManager(MainActivity.this, 2);
-                    rvList.setLayoutManager(layoutManager);
-                    rvList.setHasFixedSize(true);
-                    recycleAdapter = new RecycleAdapter(context, filteredMoviesList);
-                    rvList.setAdapter(recycleAdapter);
+                    setRecycleViewConfig(true, filteredMoviesList);
                 }
                 return true;
             }
@@ -222,7 +210,11 @@ public class MainActivity extends AppCompatActivity {
         //Save movies list as object using Realm
         movieDAO.saveMovies(movieRealmModelList);
 
-        setRecycleViewConfig();
+        if (page == 1)
+            setRecycleViewConfig(true, movieRealmModelList);
+        else
+            setRecycleViewConfig(false, movieRealmModelList);
+
         progressDialog.dismiss();
         moviesInProcess = false;
     }
@@ -244,29 +236,29 @@ public class MainActivity extends AppCompatActivity {
         movieRealmModelList.add(model);
     }
 
-    private void setRecycleViewConfig() {
-        if (page == 1) {
+    private void setRecycleViewConfig(boolean newList, List<MovieRealmModel> contentList) {
+        if (newList) {
             layoutManager = new GridLayoutManager(MainActivity.this, 2);
             rvList.setLayoutManager(layoutManager);
             rvList.setHasFixedSize(true);
             rvList.addOnScrollListener(createInfiniteScrollListener());
-            recycleAdapter = new RecycleAdapter(context, movieRealmModelList);
+            recycleAdapter = new RecycleAdapter(context, contentList);
             rvList.setAdapter(recycleAdapter);
         } else {
-            recycleAdapter.notifyItemInserted(movieModelList.size());
+            recycleAdapter.notifyItemInserted(contentList.size());
             rvList.scrollToPosition(visibleItemPosition + 2);
         }
 
-        onClickListenerMovie();
+        onClickListenerMovie(contentList);
     }
 
-    private void onClickListenerMovie() {
+    private void onClickListenerMovie(final List<MovieRealmModel> contentList) {
         recycleAdapter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 MovieDetailActivity_.intent(context)
                         .flags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .extra("movieId", movieRealmModelList.get(position).getId())
+                        .extra("movieId", contentList.get(position).getId())
                         .start();
 
                 overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
