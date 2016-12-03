@@ -1,7 +1,12 @@
 package dev.lfspersson.arctouchtmdb.activities;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,6 +30,10 @@ public class MovieDetailActivity extends AppCompatActivity {
     MovieDAO movieDAO;
 
     @ViewById
+    Toolbar toolbar;
+    @ViewById
+    TextView tvToolbarTitle;
+    @ViewById
     ImageView ivPoster;
     @ViewById
     ImageView ivBackdrop;
@@ -42,6 +51,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         movieId = (Integer) getIntent().getSerializableExtra("movieId");
         context = getApplicationContext();
 
+        setScreenConfig();
         loadInfoScreen();
     }
 
@@ -51,7 +61,33 @@ public class MovieDetailActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
     }
 
-    private void loadInfoScreen(){
+    private void setScreenConfig() {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        loadToolbar();
+    }
+
+    private void loadToolbar() {
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        tvToolbarTitle.setText(R.string.toolbar_title);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void loadInfoScreen() {
         String imageBaseUrl = context.getString(R.string.image_base_url);
         MovieRealmModel movie = movieDAO.getMovieById(movieId);
 

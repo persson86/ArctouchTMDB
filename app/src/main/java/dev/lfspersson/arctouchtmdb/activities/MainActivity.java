@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.TextView;
 
 import com.github.pwittchen.infinitescroll.library.InfiniteScrollListener;
 
@@ -74,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView rvList;
     @ViewById
     Toolbar toolbar;
+    @ViewById
+    TextView tvToolbarTitle;
 
     @AfterViews
     void initialize() {
@@ -89,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startDialog() {
-        progressDialog = new ProgressDialog(MainActivity.this);
-        progressDialog.setTitle(getResources().getString(R.string.msg_retrieving_data));
+        progressDialog = new ProgressDialog(this, R.style.CustomProgressDialog);
+        //progressDialog.setTitle(getResources().getString(R.string.msg_retrieving_data));
         progressDialog.setMessage(getResources().getString(R.string.msg_wait));
         progressDialog.show();
     }
@@ -107,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+        tvToolbarTitle.setText(R.string.toolbar_title);
     }
 
     private void setRestConfig() {
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         MenuItem actionMenuItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) actionMenuItem.getActionView();
-        int catalogo = Color.parseColor("#FF0000");
+        //searchView.setIconifiedByDefault(true);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
