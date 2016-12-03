@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,6 +34,8 @@ public class MovieDetailActivity extends AppCompatActivity {
     @ViewById
     TextView tvToolbarTitle;
     @ViewById
+    ImageView ivIcon;
+    @ViewById
     ImageView ivBackdrop;
     @ViewById
     TextView tvTitle;
@@ -46,9 +48,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     @AfterViews
     void initialize() {
-        movieId = (Integer) getIntent().getSerializableExtra("movieId");
-        context = getApplicationContext();
-
+        setActivityConfig();
         setScreenConfig();
         loadInfoScreen();
     }
@@ -57,6 +57,11 @@ public class MovieDetailActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
+    }
+
+    private void setActivityConfig() {
+        movieId = (Integer) getIntent().getSerializableExtra("movieId");
+        context = getApplicationContext();
     }
 
     private void setScreenConfig() {
@@ -72,6 +77,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         tvToolbarTitle.setText(R.string.toolbar_title);
+        ivIcon.setVisibility(View.GONE);
     }
 
     @Override

@@ -4,7 +4,6 @@ package dev.lfspersson.arctouchtmdb.adapters;
  * Created by LFSPersson on 01/12/16.
  */
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,20 +18,15 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import dev.lfspersson.arctouchtmdb.R;
-import dev.lfspersson.arctouchtmdb.database.models.GenreListModel;
-import dev.lfspersson.arctouchtmdb.database.models.GenreModel;
-import dev.lfspersson.arctouchtmdb.database.models.MovieModel;
 import dev.lfspersson.arctouchtmdb.database.models.MovieRealmModel;
 
 public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItemViewHolder> {
     private List<MovieRealmModel> movies;
-    private GenreListModel genres;
     private Context context;
     private AdapterView.OnItemClickListener itemClickListener;
 
     public RecycleAdapter(Context context, List<MovieRealmModel> movies) {
         this.movies = movies;
-        this.genres = genres;
         this.context = context;
     }
 
@@ -55,37 +49,6 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItem
                 .load(imageBaseUrl + movie.getPoster_path())
                 .into(holder.ivPoster);
     }
-
-    /*private String getGenreMovie(int position) {
-        List<Integer> listGenreIds = movies.get(position).getGenre_ids();
-        String genre_description = "";
-        String separator = " - ";
-
-        int count = 0;
-        for (int id : listGenreIds) {
-            count++;
-            int pos = 0;
-
-            for (GenreModel g : genres.getGenreList()) {
-                pos++;
-                if (g.getId() == id) {
-                    pos = pos - 1;
-                    break;
-                }
-            }
-
-            if (count != listGenreIds.size()) {
-                if (count == 1)
-                    genre_description = genres.getGenreList().get(pos).getName() + separator;
-                else {
-                    genre_description = genre_description + genres.getGenreList().get(pos).getName() + separator;
-                }
-            } else {
-                genre_description = genre_description + genres.getGenreList().get(pos).getName();
-            }
-        }
-        return genre_description;
-    }*/
 
     @Override
     public int getItemCount() {
@@ -126,4 +89,3 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.GridItem
         }
     }
 }
-

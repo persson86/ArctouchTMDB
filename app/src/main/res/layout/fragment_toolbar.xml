@@ -5,23 +5,23 @@
     android:layout_height="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
     android:minHeight="?attr/actionBarSize"
+    android:theme="@style/ToolbarTheme"
     app:contentInsetLeft="0dp"
     app:contentInsetStart="0dp"
-    android:theme="@style/ToolbarTheme"
     app:titleTextColor="@color/colorGreenTMDB">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/ivIcon"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="left"
-        android:paddingLeft="16dp"
-        android:orientation="horizontal">
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:src="@mipmap/ic_launcher" />
 
-        <TextView
-            android:id="@+id/tvToolbarTitle"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/tvToolbarTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 </android.support.v7.widget.Toolbar>

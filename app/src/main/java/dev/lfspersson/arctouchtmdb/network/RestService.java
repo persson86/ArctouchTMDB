@@ -1,7 +1,6 @@
 package dev.lfspersson.arctouchtmdb.network;
 
 import dev.lfspersson.arctouchtmdb.BuildConfig;
-import dev.lfspersson.arctouchtmdb.database.models.AuthenticationModel;
 import dev.lfspersson.arctouchtmdb.database.models.DiscoverModel;
 import dev.lfspersson.arctouchtmdb.database.models.GenreListModel;
 import retrofit.Call;
@@ -15,9 +14,6 @@ import retrofit.http.Query;
  */
 
 public interface RestService {
-    @GET("authentication/guest_session/new")
-    Call<AuthenticationModel> getAuthentication(@Query("api_key") String api_key);
-
     @GET("discover/movie")
     Call<DiscoverModel> getMovies(@Query("api_key") String api_key,
                                   @Query("language") String language,

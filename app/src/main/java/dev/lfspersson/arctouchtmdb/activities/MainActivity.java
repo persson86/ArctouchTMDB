@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -116,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     private void setRestConfig() {
         movieDAO.deleteMovies();
         service = RestService.retrofit.create(RestService.class);
-        restGetMovies();
+        restGetGenres();
     }
 
     @Override
@@ -150,6 +149,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Background
+    public void restGetGenres() {
+        final Call<GenreListModel> call = service.getGenres(API_KEY, getDeviceLanguage());
+        call.enqueue(new Callback<GenreListModel>() {
+            @Override
+            public void onResponse(Response<GenreListModel> response, Retrofit retrofit) {
+                genreListModel = response.body();
+                restGetMovies();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.e(getString(R.string.log_error), t.getMessage());
+            }
+        });
+    }
+
+    @Background
     public void restGetMovies() {
         moviesInProcess = true;
 
@@ -168,35 +184,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Response<DiscoverModel> response, Retrofit retrofit) {
                 discoverModel = response.body();
-                List<MovieModel> movieModelList = discoverModel.getResults();
+                List<MovieModel> movieModelListRest = discoverModel.getResults();
 
-                if (page > 1) {
-                    loadMovies(movieModelList);
-                } else
-                    restGetGenres(movieModelList);
+                loadMovies(movieModelListRest);
             }
 
             @Override
             public void onFailure(Throwable t) {
                 Log.e(getString(R.string.log_error), t.getMessage());
                 progressDialog.dismiss();
-            }
-        });
-    }
-
-    @Background
-    public void restGetGenres(final List<MovieModel> movieModelList) {
-        final Call<GenreListModel> call = service.getGenres(API_KEY, getDeviceLanguage());
-        call.enqueue(new Callback<GenreListModel>() {
-            @Override
-            public void onResponse(Response<GenreListModel> response, Retrofit retrofit) {
-                genreListModel = response.body();
-                loadMovies(movieModelList);
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Log.e(getString(R.string.log_error), t.getMessage());
             }
         });
     }
