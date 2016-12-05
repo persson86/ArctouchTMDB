@@ -1,11 +1,45 @@
 <resources>
 
-    <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/colorGreenTMDB</item>
+        <item name="android:textColorSecondary">@color/colorGreenTMDB</item>
+        <item name="android:editTextColor">@color/colorGreenTMDB</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="colorControlNormal">@color/colorGreenTMDB</item>
+        <item name="android:windowTitleSize">14sp</item>
+        <item name="android:textColor">@color/colorGreenTMDB</item>
+    </style>
+
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/background_splash</item>
+    </style>
+
+    <style name="CustomProgressDialog" parent="@android:style/Theme.Holo.Dialog">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:alertDialogStyle">@style/CustomAlertDialogStyle</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:textColor">@color/colorGreenTMDB</item>
+        <item name="android:textColorSecondary">@color/colorGreenTMDB</item>
+    </style>
+
+    <style name="CustomAlertDialogStyle">
+        <item name="android:bottomBright">@color/colorBackground</item>
+        <item name="android:bottomDark">@color/colorBackground</item>
+        <item name="android:bottomMedium">@color/colorBackground</item>
+        <item name="android:centerBright">@color/colorBackground</item>
+        <item name="android:centerDark">@color/colorBackground</item>
+        <item name="android:centerMedium">@color/colorBackground</item>
+        <item name="android:fullBright">@color/colorBackground</item>
+        <item name="android:fullDark">@color/colorBackground</item>
+        <item name="android:topBright">@color/colorBackground</item>
+        <item name="android:topDark">@color/colorBackground</item>
     </style>
 
 </resources>
