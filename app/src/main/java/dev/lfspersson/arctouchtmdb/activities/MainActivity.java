@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,13 +19,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.pwittchen.infinitescroll.library.InfiniteScrollListener;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
@@ -76,11 +82,15 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     @ViewById
     TextView tvToolbarTitle;
+    @ViewById
+    LinearLayout llErrorInternet;
+    @ViewById
+    Button btTryAgain;
 
     @AfterViews
     void initialize() {
-        setActivityConfig();
         startDialog();
+        setActivityConfig();
         setScreenConfig();
         setRestConfig();
     }
@@ -115,7 +125,34 @@ public class MainActivity extends AppCompatActivity {
     private void setRestConfig() {
         movieDAO.deleteMovies();
         service = RestService.retrofit.create(RestService.class);
-        restGetGenres();
+
+        if (isConnectedToInternet())
+            restGetGenres();
+    }
+
+    private boolean isConnectedToInternet() {
+        ConnectivityManager cm = (ConnectivityManager) MainActivity.this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork == null) {
+            errorInternetHandle();
+            return false;
+        } else
+            return true;
+    }
+
+    private void errorInternetHandle() {
+        progressDialog.dismiss();
+        if (movieRealmModelList == null) {
+            llErrorInternet.setVisibility(View.VISIBLE);
+            rvList.setVisibility(View.GONE);
+        } else
+            Toast.makeText(MainActivity.this, R.string.msg_no_internet, Toast.LENGTH_LONG).show();
+    }
+
+    @Click
+    void btTryAgain() {
+        startDialog();
+        setRestConfig();
     }
 
     @Override
@@ -161,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Throwable t) {
                 Log.e(getString(R.string.log_error), t.getMessage());
+                errorInternetHandle();
             }
         });
     }
@@ -192,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Throwable t) {
                 Log.e(getString(R.string.log_error), t.getMessage());
-                progressDialog.dismiss();
+                errorInternetHandle();
             }
         });
     }
@@ -250,6 +288,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         onClickListenerMovie(contentList);
+        llErrorInternet.setVisibility(View.GONE);
+        rvList.setVisibility(View.VISIBLE);
     }
 
     private void onClickListenerMovie(final List<MovieRealmModel> contentList) {
@@ -315,9 +355,11 @@ public class MainActivity extends AppCompatActivity {
                 if (moviesInProcess)
                     return;
 
-                page++;
-                restGetMovies();
-                visibleItemPosition = firstVisibleItemPosition;
+                if (isConnectedToInternet()) {
+                    page++;
+                    restGetMovies();
+                    visibleItemPosition = firstVisibleItemPosition;
+                }
             }
         };
     }
